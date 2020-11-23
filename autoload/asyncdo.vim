@@ -6,8 +6,9 @@ func! s:finalize(scope, prefix, settitle) abort
         if has_key(l:job, 'errorformat')
             let &errorformat = l:job.errorformat
         endif
-        exe a:prefix.(l:job.jump ? '' : 'get').'file '.l:job.file
-        call a:settitle(has_key(l:job, 'title') ? l:job.title : l:job.cmd, l:job.nr)
+        call a:settitle(get(l:job, 'title', l:job.cmd), l:job.nr)
+        exe a:prefix.'addfile '.l:job.file
+        exe l:job.jump ? a:prefix.a:prefix.' 1' : ''
     finally
         let &errorformat = l:tmp
         unlet! a:scope.asyncdo
@@ -83,8 +84,8 @@ func! s:build(scope, prefix, settitle) abort
     return { 'run': funcref('Run'), 'stop': funcref('Stop') }
 endfunc
 
-let s:qf = s:build(g:, 'c', {title, nr -> setqflist([], 'a', {'title': title})})
-let s:ll = s:build(w:, 'l', {title, nr -> setloclist(nr, [], 'a', {'title': title})})
+let s:qf = s:build(g:, 'c', {title, nr -> setqflist([], ' ', {'title': title})})
+let s:ll = s:build(w:, 'l', {title, nr -> setloclist(nr, [], ' ', {'title': title})})
 
 func! asyncdo#run(...) abort
     call call(s:qf.run, a:000)
